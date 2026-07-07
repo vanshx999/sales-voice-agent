@@ -1,0 +1,68 @@
+# Sales Voice Agent - Settings
+
+excel:
+  file_path: "data/leads.xlsx"
+  sheet_name: "Leads"
+  columns:
+    id: "Lead ID"
+    name: "Name"
+    phone: "Phone Number"
+    email: "Email"
+    company: "Company"
+    status: "Call Status"
+    qualification: "Lead Qualification"
+    summary: "Conversation Summary"
+    requirements: "Customer Requirements"
+    objections: "Objections Raised"
+    follow_up: "Follow-up Date"
+    meeting_date: "Meeting Date & Time"
+    last_contacted: "Last Contacted Timestamp"
+    opted_out: "Opted Out"
+    notes: "Notes"
+
+call:
+  max_retries: 3
+  retry_delay_days: 2
+  max_call_duration_seconds: 600
+  no_answer_timeout_seconds: 30
+  voicemail_timeout_seconds: 15
+  pause_between_sentences_ms: 400
+  interruption_sensitivity: 0.7
+  vad_threshold: 0.03           # Voice activity detection sensitivity
+
+llm:
+  provider: "openai"  # openai | ollama
+  base_url: "https://api.groq.com/openai/v1"  # For OpenAI-compatible APIs
+  api_key_env_var: "GROQ_API_KEY"             # Env var name for the key
+  model: "llama-3.3-70b-versatile"
+  temperature: 0.7
+  max_tokens: 512
+  ollama:
+    base_url: "http://localhost:11434"
+    model: "llama3"
+
+stt:
+  provider: "whisper"  # whisper | deepgram
+  model: "base"
+  language: "en"
+
+tts:
+  provider: "elevenlabs"  # say | elevenlabs | piper
+  voice: "en_US-lessac-medium"  # Piper voice model
+  speed: 1.0
+  voice_id: "EXAVITQu4vr4xnSDxMaL"  # ElevenLabs voice ID (Sarah - Mature, Reassuring, Confident)
+  model: "eleven_flash_v2_5"       # ElevenLabs model
+  piper_path: "piper"               # Piper binary path
+  model_dir: "~/.piper/models"      # Piper model directory
+
+voice:
+  provider: "pipecat"  # pipecat | livekit
+  sample_rate: 16000
+  channels: 1
+
+conversation:
+  greeting_delay_ms: 800
+  max_silence_seconds: 10
+  min_confidence: 0.5
+  objection_handling_enabled: true
+  qualification_enabled: true

@@ -1,0 +1,71 @@
+# Company Knowledge Base
+# Edit this file with your actual company information
+
+company:
+  name: "TechFlow Solutions"
+  agent_name: "Sarah"
+  description: |
+    TechFlow Solutions provides AI-powered workflow automation software for small to medium businesses.
+    We help companies automate repetitive tasks, reduce manual data entry, and improve team productivity.
+    
+  website: "https://techflowsolutions.example.com"
+  
+  products:
+    - name: "Workflow Automator"
+      description: "Drag-and-drop workflow builder that connects your apps and automates repetitive tasks."
+      features:
+        - "200+ app integrations"
+        - "Visual workflow builder"
+        - "Conditional logic and branching"
+        - "Real-time monitoring dashboard"
+        - "Team collaboration tools"
+      pricing: "Starting at $49/month per team"
+      ideal_for: "Companies with repetitive manual processes between different software tools"
+    
+    - name: "DataSync Pro"
+      description: "Automated data synchronization platform that keeps your databases in sync in real-time."
+      features:
+        - "Bidirectional sync"
+        - "Conflict resolution"
+        - "Schema mapping"
+        - "Scheduled syncs"
+        - "Audit logging"
+      pricing: "Starting at $99/month"
+      ideal_for: "Companies managing data across multiple platforms or databases"
+
+  use_cases:
+    - "Automating invoice processing and approval workflows"
+    - "Syncing customer data between CRM and accounting software"
+    - "Automating lead assignment and follow-up sequences"
+    - "Streamlining employee onboarding processes"
+    - "Automating report generation and distribution"
+
+  competitors:
+    - name: "Zapier"
+      differentiator: "More affordable for SMBs, better workflow logic, dedicated support"
+    - name: "Make (formerly Integromat)"
+      differentiator: "Simpler interface, faster setup, better for non-technical users"
+    - name: "UiPath"
+      differentiator: "More accessible for SMBs, no enterprise commitment required"
+
+  common_questions:
+    - question: "How long does implementation take?"
+      answer: "Most customers are up and running within a week. Our onboarding team guides you through the process."
+    
+    - question: "Do you offer a free trial?"
+      answer: "Yes, we offer a 14-day free trial with full features. No credit card required."
+    
+    - question: "What kind of support do you offer?"
+      answer: "We offer email support on all plans and dedicated Slack support on premium plans."
+    
+    - question: "Is my data secure?"
+      answer: "We use enterprise-grade encryption (AES-256) for data at rest and TLS 1.3 for data in transit. We are SOC 2 compliant."
+    
+    - question: "Can I cancel anytime?"
+      answer: "Yes, you can cancel your subscription at any time. No contracts or cancellation fees."
+
+  value_propositions:
+    - "Reduce manual data entry by up to 80%"
+    - "Average ROI of 300% in the first year"
+    - "Average time savings of 15 hours per week per team"
+    - "99.9% uptime SLA"
