@@ -202,8 +202,10 @@ class VoiceAgent:
                 if self._whisper_model is None:
                     print("[VoiceAgent] Loading Whisper...")
                     self._whisper_model = whisper.load_model("base")
+                self._lead_language = getattr(self, "_lead_language", "hinglish")
+                whisper_lang = "hi" if self._lead_language in ("hi", "hinglish") else "en"
                 text = self._whisper_model.transcribe(
-                    audio.flatten().astype(np.float32), language="en"
+                    audio.flatten().astype(np.float32), language=whisper_lang,
                 )["text"].strip()
                 if text:
                     print(f"[VoiceAgent] Heard: {text}")
