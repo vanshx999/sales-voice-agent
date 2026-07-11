@@ -35,6 +35,9 @@ class CRMUpdater:
         if call_result.get("meeting_date"):
             lead.meeting_date = call_result["meeting_date"]
 
+        if call_result.get("meeting_link"):
+            lead.meeting_link = call_result["meeting_link"]
+
         if call_result.get("outcome") == "no_answer":
             lead.notes = f"No answer on {lead.last_contacted or 'last attempt'}"
 

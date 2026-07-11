@@ -50,6 +50,16 @@ class ElevenLabsTTS:
         self.model = config.get("model", "eleven_flash_v2_5")
         self._client = None
         self._fallback = SayTTS(config)
+        self._voice_map = {}
+        lang_config = load_settings().get("language", {})
+        self._voice_map = lang_config.get("tts_voice_map", {})
+        self._current_language = "en"
+
+    def set_language(self, language: str):
+        self._current_language = language
+        if language in self._voice_map:
+            self.voice_id = self._voice_map[language]
+            print(f"[ElevenLabsTTS] Switched to language '{language}' → voice {self.voice_id}")
 
     def _get_client(self):
         if self._client is None:

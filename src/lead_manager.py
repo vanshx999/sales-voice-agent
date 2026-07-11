@@ -18,6 +18,8 @@ class Lead:
         self.objections = row.get("Objections Raised", "")
         self.follow_up = row.get("Follow-up Date", "")
         self.meeting_date = row.get("Meeting Date & Time", "")
+        self.meeting_link = row.get("Meeting Link", "")
+        self.language = row.get("Language", "")
         self.last_contacted = row.get("Last Contacted Timestamp", "")
         self.opted_out = str(row.get("Opted Out", "FALSE")).strip().upper() == "TRUE"
         self.notes = row.get("Notes", "")
@@ -75,6 +77,7 @@ class LeadManager:
             "Objections Raised": lead.objections,
             "Follow-up Date": lead.follow_up,
             "Meeting Date & Time": lead.meeting_date,
+            "Meeting Link": lead.meeting_link,
             "Last Contacted Timestamp": now,
         }
 

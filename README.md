@@ -11,6 +11,7 @@ Built with **Groq (llama-3.3-70b)** for LLM, **ElevenLabs** for voice, **Whisper
 ## Features
 
 - **Excel CRM** — Add leads to `data/leads.xlsx`, the agent reads and updates automatically
+- **Multilingual** — Supports English, Hindi, and Hinglish (Hindi+English mix) per lead
 - **Natural Voice** — ElevenLabs "Sarah" voice (cloned or stock) for human-like conversation
 - **Smart LLM** — Groq's `llama-3.3-70b-versatile` with custom system prompt, knowledge base, and structured JSON extraction
 - **Call Flow** — Greeting → Discovery → Value Prop → Objection Handling → Closing → Meeting Booking

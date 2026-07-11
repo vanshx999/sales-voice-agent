@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Sales Voice Agent - Main Entry Point
 

@@ -14,10 +14,10 @@ sounddevice>=0.4.0
 numpy>=1.24.0
 openai-whisper>=20230601
 
-# TTS Engine (choose one)
-# elevenlabs>=1.0.0     # Best quality, free tier 10K chars/mo
-# piper-tts>=1.0.0      # Local neural TTS (needs model download)
+# TTS Engine
+elevenlabs>=1.0.0      # ElevenLabs voice (free tier: 10K chars/month)
 
-# Voice Pipeline (optional, for PSTN calling)
-# livekit>=1.0.0         # LiveKit Agents
-# twilio>=8.0.0          # Twilio for PSTN calls
+# Meeting Link (optional, for Google Calendar integration)
+# google-api-python-client>=2.0.0
+# google-auth-httplib2>=0.1.0
+# google-auth-oauthlib>=1.0.0

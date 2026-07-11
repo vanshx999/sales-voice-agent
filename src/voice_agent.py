@@ -2,6 +2,7 @@ import os, re, time, queue, threading
 from typing import Optional, Callable
 from .utils import load_settings
 from .tts_engine import get_tts_engine
+from .meeting_linker import get_meeting_linker
 
 try:
     import sounddevice as sd
@@ -30,6 +31,7 @@ class VoiceAgent:
         self._interrupt_lock = threading.Lock()
         self._use_mic = use_mic and SOUNDDEVICE_AVAILABLE and os.isatty(0)
         self._vad_threshold = self.settings["call"].get("vad_threshold", 0.03)
+        self._meeting_linker = get_meeting_linker()
         self._callbacks = {
             "speech_start": [], "speech_end": [],
             "interruption": [], "call_end": [],
@@ -46,9 +48,13 @@ class VoiceAgent:
     def make_call(self, phone_number: str, lead) -> dict:
         self.is_calling = True
         self.should_stop = False
+        self._lead_language = getattr(lead, "language", "") or self.settings.get("language", {}).get("default", "hinglish")
+        if hasattr(self._tts, "set_language"):
+            self._tts.set_language(self._lead_language)
         print(f"\n{'='*60}")
         print(f"[VoiceAgent] Calling {lead.name} at {phone_number}")
         print(f"[VoiceAgent] TTS engine: {self._tts.name}")
+        print(f"[VoiceAgent] Language: {self._lead_language}")
         print(f"{'='*60}\n")
         self._emit("call_start", lead)
         if self.engine:
@@ -172,7 +178,7 @@ class VoiceAgent:
             fs = self.settings["voice"]["sample_rate"]
             max_dur = self.settings["call"]["no_answer_timeout_seconds"]
             print(f"[VoiceAgent] Listening ({max_dur}s)...")
-            recording = sd.rec(int(fs * max_dur), samplerate=fs, channels=1, dtype="float32")
+            recording = sd.rec(int(fs * max_dur), samplerate=int(fs), channels=1, dtype="float32")
             sd.wait()
             if np.max(np.abs(recording)) < self._vad_threshold:
                 print("[VoiceAgent] Silence")
@@ -238,8 +244,14 @@ class VoiceAgent:
         meeting_time = self._listen()
         if meeting_time:
             print(f"[VoiceAgent] Proposed meeting: {meeting_time}")
-            self._speak(f"Perfect, I've noted {meeting_time}. I'll send a calendar invite to confirm.")
+            meeting_data = self._meeting_linker.create_meeting(
+                title=f"Sales Call - {self.engine.lead_info.get('name', 'Prospect')}",
+                date_time=meeting_time,
+            )
             self._meeting_time = meeting_time
+            self._meeting_link = meeting_data["link"]
+            print(f"[VoiceAgent] Meeting link: {self._meeting_link}")
+            self._speak(f"Perfect, I've noted {meeting_time}. I'll send a calendar invite with the meeting link to confirm.")
             return True
         self._speak("No problem, I'll follow up via email with some available times.")
         return True
@@ -264,6 +276,7 @@ class VoiceAgent:
             "follow_up": summary_data.get("follow_up", ""),
             "qualification": qualification.get("qualified", "unknown"),
             "meeting_date": getattr(self, "_meeting_time", summary_data.get("meeting_date", "")),
+            "meeting_link": getattr(self, "_meeting_link", ""),
         }
 
     def stop(self):

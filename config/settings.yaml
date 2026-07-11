@@ -18,13 +18,31 @@ excel:
     meeting_date: "Meeting Date & Time"
     last_contacted: "Last Contacted Timestamp"
     opted_out: "Opted Out"
+    meeting_link: "Meeting Link"
+    language: "Language"
     notes: "Notes"
+
+language:
+  default: "hinglish"        # en | hi | hinglish
+  supported: ["en", "hi", "hinglish"]
+  tts_voice_map:
+    en: "EXAVITQu4vr4xnSDxMaL"    # Sarah (English)
+    hi: "IKNe3O1N1doLRQhJm1Dx"    # Hindi voice (replace with actual ID)
+    hinglish: "EXAVITQu4vr4xnSDxMaL"
+
+meeting_link:
+  provider: "default"  # default | google_calendar
+  default_link: "https://meet.google.com/new"  # Used when provider is 'default'
+  # Google Calendar settings (only needed for google_calendar provider):
+  credentials_file: "credentials.json"
+  token_file: "token.json"
+  calendar_id: "primary"
 
 call:
   max_retries: 3
   retry_delay_days: 2
   max_call_duration_seconds: 600
-  no_answer_timeout_seconds: 30
+  no_answer_timeout_seconds: 15
   voicemail_timeout_seconds: 15
   pause_between_sentences_ms: 400
   interruption_sensitivity: 0.7
