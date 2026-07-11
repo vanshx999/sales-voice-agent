@@ -189,14 +189,19 @@ class VoiceAgent:
         chunk_sec = 0.3
         chunk = int(fs * chunk_sec)
         max_chunks = int(max_dur / chunk_sec)
-        silence_limit = int(1.5 / chunk_sec)  # 1.5s silence = end of speech
-        threshold = self._vad_threshold * 5000
+        silence_limit = int(1.2 / chunk_sec)
         print(f"[VoiceAgent] Listening... (max {max_dur}s)")
         try:
             stream = self._pa.open(
                 format=pyaudio.paInt16, channels=1, rate=int(fs),
                 input=True, frames_per_buffer=chunk,
             )
+            noise_floor = 0
+            for _ in range(4):
+                data = stream.read(chunk, exception_on_overflow=False)
+                arr = np.frombuffer(data, dtype=np.int16).astype(np.float32)
+                noise_floor = max(noise_floor, np.max(np.abs(arr)))
+            threshold = max(noise_floor * 3, 800)
             frames = []
             speech_chunks = 0
             silent_chunks = 0
@@ -208,12 +213,14 @@ class VoiceAgent:
                 level = np.max(np.abs(arr))
                 if level > threshold:
                     if not started:
+                        print("[VoiceAgent] Speech started")
                         started = True
                     speech_chunks += 1
                     silent_chunks = 0
                 elif started:
                     silent_chunks += 1
                     if silent_chunks >= silence_limit:
+                        print(f"[VoiceAgent] Silence detected, stopping")
                         break
             stream.stop_stream()
             stream.close()
@@ -222,7 +229,6 @@ class VoiceAgent:
                 return None
             audio_data = b"".join(frames)
             arr = np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
-            print(f"[VoiceAgent] Heard {speech_chunks} chunks of speech at {chunk_sec}s each")
             return self._transcribe(arr, fs)
         except Exception as e:
             print(f"[VoiceAgent] Mic error: {e}")
