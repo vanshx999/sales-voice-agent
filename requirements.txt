@@ -8,14 +8,15 @@ pydantic>=2.0.0
 # LLM
 openai>=1.0.0
 
-# Voice - TTS (macOS built-in, no extra deps needed)
-# Voice - STT & Audio I/O (install for microphone input)
-sounddevice>=0.4.0
+# Voice - STT & Audio I/O
+pyaudio>=0.2.0
 numpy>=1.24.0
 openai-whisper>=20230601
+sounddevice>=0.4.0  # Only used for VAD
 
-# TTS Engine
-elevenlabs>=1.0.0      # ElevenLabs voice (free tier: 10K chars/month)
+# TTS
+elevenlabs>=1.0.0      # English/Hinglish voice
+edge-tts>=6.0.0        # Hindi voice (free, neural, no API key needed)
 
 # Meeting Link (optional, for Google Calendar integration)
 # google-api-python-client>=2.0.0

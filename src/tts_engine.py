@@ -1,4 +1,4 @@
-import os, re, time, subprocess, threading, tempfile, wave
+import os, re, time, asyncio, subprocess, threading, tempfile, wave
 from pathlib import Path
 from typing import Optional
 from .utils import load_settings, load_env
@@ -97,6 +97,35 @@ class ElevenLabsTTS:
         return voice.voice_id
 
 
+class EdgeTTS:
+    def __init__(self, config: dict):
+        self.voice = config.get("voice", "hi-IN-SwaraNeural")
+        self.rate = config.get("speed", 1.0)
+
+    @property
+    def name(self) -> str:
+        return f"edge({self.voice})"
+
+    def speak(self, text: str, on_word=None):
+        try:
+            import edge_tts
+            temp = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False)
+            temp_path = temp.name
+            temp.close()
+            try:
+                communicate = edge_tts.Communicate(text, self.voice, rate=f"+{int((self.rate-1)*50)}%")
+                asyncio.run(communicate.save(temp_path))
+                subprocess.run(["afplay", temp_path], capture_output=True, timeout=60)
+            finally:
+                try:
+                    os.unlink(temp_path)
+                except Exception:
+                    pass
+        except Exception as e:
+            print(f"[EdgeTTS] Error: {e}, falling back to say")
+            SayTTS({"voice": "Lekha", "speed": 1.0}).speak(text)
+
+
 class MultiProviderTTS:
     def __init__(self):
         settings = load_settings()
@@ -111,6 +140,8 @@ class MultiProviderTTS:
         if key not in self._engines:
             if provider == "elevenlabs":
                 self._engines[key] = ElevenLabsTTS({**config, "model": "eleven_flash_v2_5"})
+            elif provider == "edge":
+                self._engines[key] = EdgeTTS(config)
             elif provider == "say":
                 self._engines[key] = SayTTS(config)
             else:
