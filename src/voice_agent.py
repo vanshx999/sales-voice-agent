@@ -186,32 +186,43 @@ class VoiceAgent:
     def _listen_mic(self) -> Optional[str]:
         fs = self.settings["voice"]["sample_rate"]
         max_dur = self.settings["call"]["no_answer_timeout_seconds"]
-        chunk = int(fs * 0.5)
-        max_chunks = int(max_dur / 0.5)
-        print(f"[VoiceAgent] Listening ({max_dur}s)...")
+        chunk_sec = 0.3
+        chunk = int(fs * chunk_sec)
+        max_chunks = int(max_dur / chunk_sec)
+        silence_limit = int(1.5 / chunk_sec)  # 1.5s silence = end of speech
+        threshold = self._vad_threshold * 5000
+        print(f"[VoiceAgent] Listening... (max {max_dur}s)")
         try:
             stream = self._pa.open(
                 format=pyaudio.paInt16, channels=1, rate=int(fs),
                 input=True, frames_per_buffer=chunk,
             )
             frames = []
-            energy_sum = 0.0
-            voiced_chunks = 0
-            for _ in range(max_chunks):
+            speech_chunks = 0
+            silent_chunks = 0
+            started = False
+            for i in range(max_chunks):
                 data = stream.read(chunk, exception_on_overflow=False)
                 frames.append(data)
                 arr = np.frombuffer(data, dtype=np.int16).astype(np.float32)
                 level = np.max(np.abs(arr))
-                energy_sum += level
-                if level > self._vad_threshold * 5000:
-                    voiced_chunks += 1
+                if level > threshold:
+                    if not started:
+                        started = True
+                    speech_chunks += 1
+                    silent_chunks = 0
+                elif started:
+                    silent_chunks += 1
+                    if silent_chunks >= silence_limit:
+                        break
             stream.stop_stream()
             stream.close()
-            if voiced_chunks < 1:
+            if not started or speech_chunks < 1:
                 print("[VoiceAgent] Silence")
                 return None
             audio_data = b"".join(frames)
             arr = np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
+            print(f"[VoiceAgent] Heard {speech_chunks} chunks of speech at {chunk_sec}s each")
             return self._transcribe(arr, fs)
         except Exception as e:
             print(f"[VoiceAgent] Mic error: {e}")
