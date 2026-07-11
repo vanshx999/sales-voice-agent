@@ -159,54 +159,23 @@ class VoiceAgent:
 
     def _listen_mic(self) -> Optional[str]:
         fs = self.settings["voice"]["sample_rate"]
-        max_dur = 8
-        chunk_sec = 0.3
-        chunk = int(fs * chunk_sec)
-        max_chunks = int(max_dur / chunk_sec)
-        silence_limit = int(0.8 / chunk_sec)
-        max_after_speech = int(5 / chunk_sec)
-        print(f"[VoiceAgent] Listening...")
+        duration = 6
+        print(f"[VoiceAgent] Recording {duration}s...")
         try:
+            frames = []
             stream = self._pa.open(
                 format=pyaudio.paInt16, channels=1, rate=int(fs),
-                input=True, frames_per_buffer=chunk,
+                input=True, frames_per_buffer=int(fs * 0.2),
             )
-            noise_samples = []
-            for _ in range(4):
-                data = stream.read(chunk, exception_on_overflow=False)
-                arr = np.frombuffer(data, dtype=np.int16).astype(np.float32)
-                noise_samples.append(np.max(np.abs(arr)))
-            noise_floor = sum(noise_samples) / len(noise_samples)
-            threshold = max(noise_floor * 1.5, 200)
-            print(f"[VoiceAgent] noise_floor={int(noise_floor)}, threshold={int(threshold)}")
-            frames = []
-            silent_in_row = 0
-            started = False
-            after_speech = 0
-            for _ in range(max_chunks):
-                data = stream.read(chunk, exception_on_overflow=False)
-                frames.append(data)
-                arr = np.frombuffer(data, dtype=np.int16).astype(np.float32)
-                level = np.max(np.abs(arr))
-                if level > threshold:
-                    if not started:
-                        started = True
-                    silent_in_row = 0
-                    after_speech += 1
-                elif started:
-                    silent_in_row += 1
-                    after_speech += 1
-                    if silent_in_row >= silence_limit:
-                        break
-                if started and after_speech >= max_after_speech:
-                    break
+            for _ in range(int(duration / 0.2)):
+                frames.append(stream.read(int(fs * 0.2), exception_on_overflow=False))
             stream.stop_stream()
             stream.close()
-            if not started:
-                print("[VoiceAgent] Silence")
-                return None
             audio_data = b"".join(frames)
             arr = np.frombuffer(audio_data, dtype=np.int16).astype(np.float32) / 32768.0
+            if np.max(np.abs(arr)) < 0.005:
+                print("[VoiceAgent] Too quiet, skipping")
+                return None
             return self._transcribe(arr, fs)
         except Exception as e:
             print(f"[VoiceAgent] Mic error: {e}")
