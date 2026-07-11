@@ -171,12 +171,14 @@ class VoiceAgent:
                 format=pyaudio.paInt16, channels=1, rate=int(fs),
                 input=True, frames_per_buffer=chunk,
             )
-            noise_floor = 0
+            noise_samples = []
             for _ in range(4):
                 data = stream.read(chunk, exception_on_overflow=False)
                 arr = np.frombuffer(data, dtype=np.int16).astype(np.float32)
-                noise_floor = max(noise_floor, np.max(np.abs(arr)))
-            threshold = max(noise_floor * 2, 500)
+                noise_samples.append(np.max(np.abs(arr)))
+            noise_floor = sum(noise_samples) / len(noise_samples)
+            threshold = max(noise_floor * 1.5, 200)
+            print(f"[VoiceAgent] noise_floor={int(noise_floor)}, threshold={int(threshold)}")
             frames = []
             silent_in_row = 0
             started = False
