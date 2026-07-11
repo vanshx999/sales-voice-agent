@@ -40,7 +40,6 @@ class ConversationEngine:
             company_name=self.kb["company"]["name"],
             agent_name=self.kb["company"]["agent_name"],
             company_description=self.kb["company"]["description"],
-            language=self.language,
         )
 
     def _build_context(self) -> str:
@@ -59,7 +58,6 @@ Value Propositions: {json.dumps(self.kb['company']['value_propositions'], indent
             lead_name=self.lead_info["name"],
             lead_company=self.lead_info["company"],
             call_reason="introduce our workflow automation solutions",
-            language=self.language,
         )
         greeting = self._llm_generate(prompt, max_tokens=60)
         greeting = greeting.strip("\"' ")
@@ -148,7 +146,6 @@ Value Propositions: {json.dumps(self.kb['company']['value_propositions'], indent
             objection=objection,
             company_info=self._build_context(),
             prospect_context=json.dumps(self.lead_info),
-            language=self.language,
         )
         response = self._llm_generate(prompt, max_tokens=80)
         self.conversation_history.append({"role": "assistant", "content": response})

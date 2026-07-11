@@ -18,10 +18,6 @@ except ImportError:
     PYAUDIO_AVAILABLE = False
 
 
-_LANG_ASK_EN = "Would you like to continue in English or Hindi?"
-_LANG_ASK_HI = "Aap Hindi mein baat karenge ya English mein?"
-
-
 class VoiceAgent:
     def __init__(self, conversation_engine=None, use_mic=False):
         self.settings = load_settings()
@@ -50,32 +46,6 @@ class VoiceAgent:
         for cb in self._callbacks.get(event, []):
             cb(*args, **kwargs)
 
-    # ── Language Selection ───────────────────────────────────────
-
-    def _ask_language(self) -> str:
-        self._speak(_LANG_ASK_EN)
-        time.sleep(0.5)
-        self._speak(_LANG_ASK_HI)
-        response = self._listen()
-        if response:
-            response = response.lower().strip()
-            if "angrezi" in response or "english" in response or "inglish" in response:
-                return "en"
-            if "hinglish" in response or "mix" in response or "dono" in response:
-                return "hinglish"
-            if "hind" in response or "hindi" in response or "desi" in response:
-                return "hi"
-        return "hinglish"
-
-    def _set_language(self, language: str):
-        self._lead_language = language
-        if hasattr(self._tts, "set_language"):
-            self._tts.set_language(language)
-        if self.engine:
-            self.engine.language = language
-            self.engine.lead_info["language"] = language
-        print(f"[VoiceAgent] Language set to: {language}")
-
     # ── Call Flow ─────────────────────────────────────────────────
 
     def make_call(self, phone_number: str, lead) -> dict:
@@ -96,9 +66,6 @@ class VoiceAgent:
             self.engine.start_call(lead)
             greeting = self.engine.generate_greeting()
             self._speak(greeting)
-        if self.settings.get("language", {}).get("ask_at_start", True):
-            chosen = self._ask_language()
-            self._set_language(chosen)
         result = self._run_conversation_loop(lead)
         self.is_calling = False
         if self._pa:
@@ -273,14 +240,12 @@ class VoiceAgent:
     def _is_end_call_signal(self, text: str) -> bool:
         return any(p in text for p in [
             "goodbye", "bye", "hang up", "end call", "that's all", "i have to go",
-            "alvida", "bye bye", "rakhiye",
         ])
 
     def _detect_objection(self, text: str) -> Optional[str]:
         for kw in ["too expensive", "not interested", "no budget", "too busy",
                     "happy with current", "not now", "maybe later", "call me back",
-                    "don't need", "waste of time", "not the right time",
-                    "mehanga", "paisa nahi", "budget nahi", "interested nahi"]:
+                    "don't need", "waste of time", "not the right time"]:
             if kw in text:
                 return kw
         return None
@@ -290,14 +255,12 @@ class VoiceAgent:
             "book a meeting", "book a call", "schedule a meeting", "schedule a call",
             "set up a meeting", "set up a call", "let's do it", "let's schedule",
             "yes please book", "yes please schedule", "sign me up",
-            "meeting book karo", "call schedule karo", "haan karo", "theek hai karo",
         ])
 
     def _detect_not_interested(self, text: str) -> bool:
         return any(p in text for p in [
             "not interested", "no thanks", "don't call me", "stop calling",
             "leave me alone", "take me off", "do not call", "unsubscribe",
-            "interest nahi", "nahi chahiye", "mat karo",
         ])
 
     def _book_meeting(self) -> bool:

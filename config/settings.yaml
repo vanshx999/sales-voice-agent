@@ -23,17 +23,13 @@ excel:
     notes: "Notes"
 
 language:
-  default: "hinglish"        # en | hi | hinglish
-  supported: ["en", "hi", "hinglish"]
-  ask_at_start: true          # Ask prospect "Hindi or English?" on every call
+  default: "en"               # en | hinglish
+  supported: ["en", "hinglish"]
+  ask_at_start: false         # Just speak English naturally
   tts_providers:
     en:
       provider: "elevenlabs"
       voice_id: "EXAVITQu4vr4xnSDxMaL"
-      speed: 1.0
-    hi:
-      provider: "edge"
-      voice: "hi-IN-SwaraNeural"
       speed: 1.0
     hinglish:
       provider: "elevenlabs"
