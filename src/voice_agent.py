@@ -185,12 +185,13 @@ class VoiceAgent:
 
     def _listen_mic(self) -> Optional[str]:
         fs = self.settings["voice"]["sample_rate"]
-        max_dur = self.settings["call"]["no_answer_timeout_seconds"]
+        max_dur = 8
         chunk_sec = 0.3
         chunk = int(fs * chunk_sec)
         max_chunks = int(max_dur / chunk_sec)
-        silence_limit = int(1.2 / chunk_sec)
-        print(f"[VoiceAgent] Listening... (max {max_dur}s)")
+        silence_limit = int(0.8 / chunk_sec)
+        max_after_speech = int(5 / chunk_sec)
+        print(f"[VoiceAgent] Listening...")
         try:
             stream = self._pa.open(
                 format=pyaudio.paInt16, channels=1, rate=int(fs),
@@ -201,30 +202,31 @@ class VoiceAgent:
                 data = stream.read(chunk, exception_on_overflow=False)
                 arr = np.frombuffer(data, dtype=np.int16).astype(np.float32)
                 noise_floor = max(noise_floor, np.max(np.abs(arr)))
-            threshold = max(noise_floor * 3, 800)
+            threshold = max(noise_floor * 3, 1500)
             frames = []
-            speech_chunks = 0
-            silent_chunks = 0
+            silent_in_row = 0
             started = False
-            for i in range(max_chunks):
+            after_speech = 0
+            for _ in range(max_chunks):
                 data = stream.read(chunk, exception_on_overflow=False)
                 frames.append(data)
                 arr = np.frombuffer(data, dtype=np.int16).astype(np.float32)
                 level = np.max(np.abs(arr))
                 if level > threshold:
                     if not started:
-                        print("[VoiceAgent] Speech started")
                         started = True
-                    speech_chunks += 1
-                    silent_chunks = 0
+                    silent_in_row = 0
+                    after_speech += 1
                 elif started:
-                    silent_chunks += 1
-                    if silent_chunks >= silence_limit:
-                        print(f"[VoiceAgent] Silence detected, stopping")
+                    silent_in_row += 1
+                    after_speech += 1
+                    if silent_in_row >= silence_limit:
                         break
+                if started and after_speech >= max_after_speech:
+                    break
             stream.stop_stream()
             stream.close()
-            if not started or speech_chunks < 1:
+            if not started:
                 print("[VoiceAgent] Silence")
                 return None
             audio_data = b"".join(frames)
