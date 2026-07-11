@@ -111,15 +111,22 @@ class VoiceAgent:
         max_turns = 30
         turn = 0
         outcome = "no_answer"
+        consecutive_silence = 0
         while turn < max_turns and not self.should_stop:
             turn += 1
             print(f"\n--- Turn {turn} ---")
             user_input = self._listen()
             if not user_input:
-                if turn == 1:
-                    print("[VoiceAgent] No answer")
-                    outcome = "no_answer"
-                break
+                consecutive_silence += 1
+                if consecutive_silence >= 2 or turn == 1:
+                    if turn == 1:
+                        print("[VoiceAgent] No answer")
+                        outcome = "no_answer"
+                    else:
+                        outcome = "timeout"
+                    break
+                self._speak("Hello? Aap sun rahe hain?")
+                continue
             user_input = user_input.strip().lower()
             print(f"[Lead] {user_input}")
             if self._is_end_call_signal(user_input):
@@ -202,7 +209,7 @@ class VoiceAgent:
                 data = stream.read(chunk, exception_on_overflow=False)
                 arr = np.frombuffer(data, dtype=np.int16).astype(np.float32)
                 noise_floor = max(noise_floor, np.max(np.abs(arr)))
-            threshold = max(noise_floor * 3, 1500)
+            threshold = max(noise_floor * 2, 500)
             frames = []
             silent_in_row = 0
             started = False
